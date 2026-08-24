@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ImageQuery</title>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    background: #f4f4f6;
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .page {
+    width: 100%;
+    max-width: 960px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .layout {
+    width: 100%;
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+  .left-col {
+    width: 340px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .right-col {
+    flex: 1;
+    min-width: 0;
+  }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    padding: 28px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 24px;
+  }
+  h2 {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  input {
+    width: 100%;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+  }
+  button {
+    width: 100%;
+    padding: 10px;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  button:hover {
+    background: #1d4ed8;
+  }
+  .status {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #333;
+  }
+  .error {
+    color: #c0392b;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+  }
+  li {
+    font-size: 12px;
+    word-break: break-all;
+    text-align: center;
+  }
+  li img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    background: #eee;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>ImageQuery</h1>
+
+  <div class="layout">
+    <div class="left-col">
+      <div class="card">
+        <h2>Index a folder</h2>
+        <input type="text" id="folderPath" placeholder="e.g. data/images">
+        <button onclick="indexFolder()">Index</button>
+        <div id="indexStatus" class="status"></div>
+      </div>
+
+      <div class="card">
+        <h2>Search</h2>
+        <input type="text" id="query" placeholder="e.g. siamese">
+        <input type="number" id="topK" placeholder="top_k (default 5)" value="5">
+        <button onclick="searchImages()">Search</button>
+        <div id="searchStatus" class="status"></div>
+      </div>
+    </div>
+
+    <div class="right-col card">
+      <h2>Results</h2>
+      <ul id="results"></ul>
+    </div>
+  </div>
+</div>
+
+<script>
+const BASE_URL = "http://127.0.0.1:8000";
+
+async function indexFolder() {
+  const folderPath = document.getElementById("folderPath").value;
+  const statusEl = document.getElementById("indexStatus");
+  statusEl.textContent = "Indexing...";
+  statusEl.className = "status";
+
+  try {
+    const res = await fetch(`${BASE_URL}/index`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ folder_path: folderPath })
+    });
+    const data = await res.json();
+    statusEl.textContent = data.message;
+  } catch (err) {
+    statusEl.textContent = "Error: could not reach server.";
+    statusEl.className = "status error";
+  }
+}
+
+async function searchImages() {
+  const query = document.getElementById("query").value;
+  const topK = parseInt(document.getElementById("topK").value) || 5;
+  const statusEl = document.getElementById("searchStatus");
+  const resultsEl = document.getElementById("results");
+  resultsEl.innerHTML = "";
+  statusEl.textContent = "Searching...";
+  statusEl.className = "status";
+
+  try {
+    const res = await fetch(`${BASE_URL}/search`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: query, top_k: topK })
+    });
+    const data = await res.json();
+
+    if (!Array.isArray(data)) {
+      statusEl.textContent = data.message || "No results.";
+      return;
+    }
+
+    statusEl.textContent = `${data.length} result(s)`;
+    data.forEach(item => {
+      const li = document.createElement("li");
+
+      const img = document.createElement("img");
+      img.src = `${BASE_URL}/image?path=${encodeURIComponent(item.path)}`;
+      img.alt = item.path;
+      li.appendChild(img);
+
+      const caption = document.createElement("div");
+      const distance = item._distance?.toFixed ? item._distance.toFixed(4) : item._distance;
+      caption.textContent = `distance: ${distance}`;
+      li.appendChild(caption);
+
+      resultsEl.appendChild(li);
+    });
+  } catch (err) {
+    statusEl.textContent = "Error: could not reach server.";
+    statusEl.className = "status error";
+  }
+}
+</script>
+</body>
+</html>

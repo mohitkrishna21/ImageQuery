@@ -1,0 +1,8 @@
+venv/
+.env
+__pycache__/
+*.pyc
+logs/
+lancedb_data/
+.pytest_cache/
+data/
