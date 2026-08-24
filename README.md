@@ -46,6 +46,7 @@ Accuracy was measured with a custom precision@5 script (`evaluate.py`) against a
 This significantly outperforms the ~0.10 expected from random chance on this dataset, confirming CLIP is performing genuine semantic discrimination between breeds rather than superficial matching.
 
 ## Project structure
+```
 ImageQuery/
 ├── image_search_pipeline.py   # core CLIP + LanceDB pipeline (indexing, embedding, search, logging)
 ├── fastapi_backend.py         # FastAPI app: /index, /search, /image, and frontend serving
@@ -56,6 +57,7 @@ ImageQuery/
 ├── .gitignore
 ├── LICENSE
 └── README.md
+```
 
 ## Known limitations / future improvements
 
