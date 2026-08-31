@@ -118,7 +118,7 @@
 
       <div class="card">
         <h2>Search</h2>
-        <input type="text" id="query" placeholder="e.g. siamese">
+        <input type="text" id="query" placeholder="e.g. chihuahua">
         <input type="number" id="topK" placeholder="top_k (default 5)" value="5">
         <button onclick="searchImages()">Search</button>
         <div id="searchStatus" class="status"></div>
@@ -140,6 +140,15 @@ async function indexFolder() {
   const statusEl = document.getElementById("indexStatus");
   statusEl.textContent = "Indexing...";
   statusEl.className = "status";
+
+  // A new folder invalidates any results/search state from the
+  // previous one — clear them as soon as indexing starts.
+  document.getElementById("results").innerHTML = "";
+  document.getElementById("query").value = "";
+  document.getElementById("topK").value = "5";
+  const searchStatusEl = document.getElementById("searchStatus");
+  searchStatusEl.textContent = "";
+  searchStatusEl.className = "status";
 
   try {
     const res = await fetch(`${BASE_URL}/index`, {
