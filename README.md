@@ -62,8 +62,5 @@ ImageQuery/
 ## Known limitations / future improvements
 
 - `index_folder()` currently only reads files at the top level of a given folder (no recursive subfolder walking).
-- Search results return full LanceDB records (including embedding vectors) rather than a trimmed response.
-
-## License
 
 MIT
