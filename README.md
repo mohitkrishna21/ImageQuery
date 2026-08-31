@@ -63,4 +63,6 @@ ImageQuery/
 
 - `index_folder()` currently only reads files at the top level of a given folder (no recursive subfolder walking).
 
-MIT
+## License
+
+[MIT](LICENSE)
